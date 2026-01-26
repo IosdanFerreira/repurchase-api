@@ -1,0 +1,15 @@
+# Keys folder
+
+This folder contains JWT RSA keys for authentication.
+
+## Generate Keys
+
+```bash
+# Generate private key
+openssl genrsa -out private.key 2048
+
+# Extract public key
+openssl rsa -in private.key -pubout -out public.key
+```
+
+**Important:** Never commit real keys to version control!

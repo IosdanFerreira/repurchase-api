@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+
+# Keys (keep example but ignore real keys)
+keys/*.key
+!keys/.gitkeep
+
+# Prisma
+prisma/migrations/*
+!prisma/migrations/.gitkeep
+
+# TypeORM migrations (generated)
+src/shared/database/migrations/*.js
+src/shared/database/migrations/*.map
+
+# Cache
+.cache/
+
+# Temporary files
+tmp/
+temp/

@@ -1,0 +1,247 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// =============================================
+// ENUMS
+// =============================================
+
+enum WhatsAppConnectionType {
+    OFFICIAL_WHATSAPP    @map("oficial_whatsapp")
+    WEB_WHATSAPP         @map("web_whatsapp")
+    WHATSAPP_COEXISTENCE @map("whatsapp_coexistence")
+}
+
+enum WhatsAppConnectionStatus {
+    ACTIVE
+    IN_SYNC
+    DISCONNECTED
+    DISABLED
+}
+
+// =============================================
+// USER MODEL
+// =============================================
+
+model User {
+    id         String   @id @default(uuid())
+    name       String
+    email      String   @unique
+    password   String
+    active     Boolean  @default(true)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    @@map("users")
+}
+
+// =============================================
+// WHATSAPP COMMUNICATION METHODS
+// =============================================
+
+model WhatsAppCommunicationMethods {
+    id         String                 @id @default(uuid()) @db.Uuid
+    name       WhatsAppConnectionType @unique @default(OFFICIAL_WHATSAPP)
+    active     Boolean                @default(true)
+    created_at DateTime               @default(now()) @db.Timestamptz(6)
+    updated_at DateTime               @default(now()) @updatedAt @db.Timestamptz(6)
+
+    entity_settings                   EntitySettings[]
+    entity_whatsapp_message_templates EntityWhatsAppMessageTemplate[]
+
+    @@map("whatsapp_communication_methods")
+}
+
+// =============================================
+// TEMPLATE VARIABLES AND TYPES
+// =============================================
+
+model TemplateMessageVariable {
+    id               String   @id @default(uuid()) @db.Uuid
+    value            String   @db.VarChar(50)
+    description      String   @db.VarChar(150)
+    always_available Boolean  @default(false)
+    active           Boolean  @default(true)
+    created_at       DateTime @default(now()) @db.Timestamptz(6)
+    updated_at       DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    whatsapp_message_template_variables WhatsAppMessageTemplateVariable[]
+
+    @@map("template_message_variables")
+}
+
+model DynamicMessageContent {
+    slug             String   @id @db.VarChar(150)
+    name             String   @db.VarChar(250)
+    always_available Boolean  @default(false)
+    active           Boolean  @default(true)
+    created_at       DateTime @default(now()) @db.Timestamptz(6)
+    updated_at       DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    whatsapp_message_template_contents         WhatsAppMessageTemplateContent[]
+    whatsapp_message_template_dynamic_contents WhatsAppMessageTemplateDynamicContent[]
+
+    @@map("dynamic_message_content")
+}
+
+model TypeMessageContent {
+    slug       String   @id @db.VarChar(50)
+    name       String   @db.VarChar(50)
+    active     Boolean  @default(true)
+    created_at DateTime @default(now()) @db.Timestamptz(6)
+    updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    whatsapp_message_template_contents WhatsAppMessageTemplateContent[]
+
+    @@map("type_message_content")
+}
+
+// =============================================
+// WHATSAPP TEMPLATES
+// =============================================
+
+model WhatsAppMessageTemplate {
+    id                   String   @id @default(uuid()) @db.Uuid
+    entity_id            String?  @db.Uuid
+    name                 String   @db.VarChar(150)
+    template_slug        String?  @db.VarChar(250)
+    template_language    String?  @db.VarChar(50)
+    official_header_text String?  @db.VarChar(250)
+    official_content     String?  @db.Text
+    official_footer_text String?  @db.VarChar(250)
+    official_button_name String?  @db.VarChar(150)
+    active               Boolean  @default(true)
+    created_at           DateTime @default(now()) @db.Timestamptz(6)
+    updated_at           DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    whatsapp_message_template_variables        WhatsAppMessageTemplateVariable[]
+    whatsapp_message_template_contents         WhatsAppMessageTemplateContent[]
+    entity_whatsapp_message_templates          EntityWhatsAppMessageTemplate[]
+    whatsapp_message_template_dynamic_contents WhatsAppMessageTemplateDynamicContent[]
+
+    @@map("whatsapp_message_template")
+}
+
+model WhatsAppMessageTemplateVariable {
+    template_message_variable_id String   @db.Uuid
+    whatsapp_message_template_id String   @db.Uuid
+    created_at                   DateTime @default(now()) @db.Timestamptz(6)
+    updated_at                   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    template_message_variable TemplateMessageVariable @relation(fields: [template_message_variable_id], references: [id], onDelete: Cascade)
+    whatsapp_message_template WhatsAppMessageTemplate @relation(fields: [whatsapp_message_template_id], references: [id], onDelete: Cascade)
+
+    @@id([template_message_variable_id, whatsapp_message_template_id])
+    @@map("whatsapp_message_template_variables")
+}
+
+model WhatsAppMessageTemplateContent {
+    id                           String   @id @default(uuid()) @db.Uuid
+    whatsapp_message_template_id String   @db.Uuid
+    type_message_content_slug    String   @db.VarChar(50)
+    order                        Int
+    enabled                      Boolean  @default(true)
+    header_text                  String?  @db.VarChar(250)
+    content                      String?  @db.Text
+    footer_text                  String?  @db.VarChar(250)
+    dynamic_message_content_slug String?  @db.VarChar(150)
+    active                       Boolean  @default(true)
+    created_at                   DateTime @default(now()) @db.Timestamptz(6)
+    updated_at                   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    whatsapp_message_template                     WhatsAppMessageTemplate                    @relation(fields: [whatsapp_message_template_id], references: [id], onDelete: Cascade)
+    type_message_content                          TypeMessageContent                         @relation(fields: [type_message_content_slug], references: [slug])
+    dynamic_message_content                       DynamicMessageContent?                     @relation(fields: [dynamic_message_content_slug], references: [slug])
+    whatsapp_message_template_content_attachments WhatsAppMessageTemplateContentAttachment[]
+    entity_customized_templates                   EntityCustomizedTemplate[]
+
+    @@map("whatsapp_message_template_contents")
+}
+
+model WhatsAppMessageTemplateContentAttachment {
+    id                                   String   @id @default(uuid()) @db.Uuid
+    whatsapp_message_template_content_id String   @db.Uuid
+    link                                 String   @db.VarChar(250)
+    order                                Int
+    name                                 String?  @db.VarChar(250)
+    created_at                           DateTime @default(now()) @db.Timestamptz(6)
+    updated_at                           DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    whatsapp_message_template_content WhatsAppMessageTemplateContent @relation(fields: [whatsapp_message_template_content_id], references: [id], onDelete: Cascade)
+
+    @@map("whatsapp_message_template_content_attachments")
+}
+
+model WhatsAppMessageTemplateDynamicContent {
+    whatsapp_message_template_id String   @db.Uuid
+    dynamic_message_content_slug String   @db.VarChar(150)
+    created_at                   DateTime @default(now()) @db.Timestamptz(6)
+    updated_at                   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    whatsapp_message_template WhatsAppMessageTemplate @relation(fields: [whatsapp_message_template_id], references: [id], onDelete: Cascade)
+    dynamic_message_content   DynamicMessageContent   @relation(fields: [dynamic_message_content_slug], references: [slug], onDelete: Cascade)
+
+    @@id([whatsapp_message_template_id, dynamic_message_content_slug])
+    @@map("whatsapp_message_template_dynamic_contents")
+}
+
+// =============================================
+// ENTITY CUSTOMIZATION
+// =============================================
+
+model EntityWhatsAppMessageTemplate {
+    whatsapp_message_template_id     String   @db.Uuid
+    entity_id                        String   @db.Uuid
+    whatsapp_communication_method_id String   @db.Uuid
+    enabled                          Boolean  @default(true)
+    created_at                       DateTime @default(now()) @db.Timestamptz(6)
+    updated_at                       DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    whatsapp_message_template     WhatsAppMessageTemplate      @relation(fields: [whatsapp_message_template_id], references: [id], onDelete: Cascade)
+    whatsapp_communication_method WhatsAppCommunicationMethods @relation(fields: [whatsapp_communication_method_id], references: [id])
+    entity_customized_templates   EntityCustomizedTemplate[]
+
+    @@id([whatsapp_message_template_id, entity_id])
+    @@map("entity_whatsapp_message_template")
+}
+
+model EntityCustomizedTemplate {
+    whatsapp_message_template_id         String   @db.Uuid
+    entity_id                            String   @db.Uuid
+    whatsapp_message_template_content_id String   @db.Uuid
+    created_at                           DateTime @default(now()) @db.Timestamptz(6)
+    updated_at                           DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+    entity_whatsapp_message_template  EntityWhatsAppMessageTemplate  @relation(fields: [whatsapp_message_template_id, entity_id], references: [whatsapp_message_template_id, entity_id], onDelete: Cascade)
+    whatsapp_message_template_content WhatsAppMessageTemplateContent @relation(fields: [whatsapp_message_template_content_id], references: [id], onDelete: Cascade)
+
+    @@id([whatsapp_message_template_id, entity_id, whatsapp_message_template_content_id])
+    @@map("entity_customized_templates")
+}
+
+// =============================================
+// ENTITY SETTINGS
+// =============================================
+
+model EntitySettings {
+    id                                 String                    @id @default(uuid()) @db.Uuid
+    entity_id                          String                    @unique @db.Uuid
+    whatsapp_communication_method_id   String?                   @db.Uuid
+    whatsapp_communication_method_slug WhatsAppConnectionType?
+    whatsapp_web_connection_status     WhatsAppConnectionStatus?
+    whatsapp_web_connected_number      String?                   @db.VarChar(20)
+    created_at                         DateTime                  @default(now()) @db.Timestamptz(6)
+    updated_at                         DateTime                  @default(now()) @updatedAt @db.Timestamptz(6)
+
+    whatsapp_communication_method WhatsAppCommunicationMethods? @relation(fields: [whatsapp_communication_method_id], references: [id])
+
+    @@map("entity_settings")
+}
