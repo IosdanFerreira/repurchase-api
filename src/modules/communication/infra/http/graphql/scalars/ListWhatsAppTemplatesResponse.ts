@@ -8,7 +8,7 @@ export class WhatsAppTemplateItem {
   @Field()
   template_name: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   template_slug?: string | null;
 
   @Field({ nullable: true })

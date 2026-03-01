@@ -14,15 +14,18 @@ export default class FakeUsersRepository implements IUsersRepository {
     return this.users.find((user) => user.email === email);
   }
 
+  public async findByGoogleId(googleId: string): Promise<User | undefined> {
+    return this.users.find((user) => user.googleId === googleId);
+  }
+
   public async create(data: ICreateUserDTO): Promise<User> {
     const user = new User();
 
     Object.assign(user, {
       id: uuid(),
       ...data,
-      active: true,
-      created_at: new Date(),
-      updated_at: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     this.users.push(user);
@@ -38,6 +41,25 @@ export default class FakeUsersRepository implements IUsersRepository {
     }
 
     return user;
+  }
+
+  public async updateCompanyId(
+    userId: string,
+    companyId: string,
+  ): Promise<User> {
+    const user = this.users.find((u) => u.id === userId);
+    if (user) {
+      user.companyId = companyId;
+    }
+    return user!;
+  }
+
+  public async updatePassword(userId: string, password: string): Promise<User> {
+    const user = this.users.find((u) => u.id === userId);
+    if (user) {
+      user.password = password;
+    }
+    return user!;
   }
 
   public async delete(id: string): Promise<void> {

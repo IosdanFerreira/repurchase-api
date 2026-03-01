@@ -1,4 +1,6 @@
+import CompanyResolver from "@modules/companies/infra/http/graphql/resolvers/CompanyResolver";
 import HealthResolver from "./HealthResolver";
+import PasswordResolver from "@modules/users/infra/http/graphql/resolvers/PasswordResolver";
 import UserResolver from "@modules/users/infra/http/graphql/resolvers/UserResolver";
 import WebWhatsappResolver from "@modules/communication/infra/http/graphql/resolvers/WebWhatsappResolver";
 import WhatsAppTemplateResolver from "@modules/communication/infra/http/graphql/resolvers/WhatsAppTemplateResolver";
@@ -8,6 +10,8 @@ export async function createSchema() {
   const schema = await buildSchema({
     resolvers: [
       UserResolver,
+      PasswordResolver,
+      CompanyResolver,
       HealthResolver,
       WebWhatsappResolver,
       WhatsAppTemplateResolver,

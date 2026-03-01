@@ -5,20 +5,32 @@ export default class User {
   @Field(() => ID)
   id: string;
 
-  @Field()
-  name: string;
+  @Field({ name: "first_name" })
+  firstName: string;
+
+  @Field({ name: "last_name" })
+  lastName: string;
 
   @Field()
   email: string;
 
-  password: string;
+  @Field({ nullable: true })
+  phone?: string;
 
-  @Field()
-  active: boolean;
+  password?: string;
 
-  @Field()
-  created_at: Date;
+  @Field({ name: "is_staff" })
+  isStaff: boolean;
 
-  @Field()
-  updated_at: Date;
+  @Field(() => String, { nullable: true, name: "google_id" })
+  googleId?: string;
+
+  @Field(() => String, { nullable: true, name: "company_id" })
+  companyId?: string;
+
+  @Field({ name: "created_at" })
+  createdAt: Date;
+
+  @Field({ name: "updated_at" })
+  updatedAt: Date;
 }

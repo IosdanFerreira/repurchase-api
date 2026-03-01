@@ -10,6 +10,7 @@ import communicationRouter from "@modules/communication/infra/http/routes/commun
 import cors from "cors";
 import { createServer } from "http";
 import helmet from "helmet";
+import { join } from "path";
 
 const app = express();
 const httpServer = createServer(app);
@@ -64,6 +65,9 @@ if (process.env.NODE_ENV === "production") {
 // Body parser
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Serve uploaded files as static
+app.use("/uploads", express.static(join(process.cwd(), "uploads")));
 
 // Rate limiter for REST endpoints
 const rateLimiter = new RateLimiterMemory({

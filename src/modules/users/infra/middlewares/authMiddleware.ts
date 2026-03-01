@@ -5,10 +5,8 @@ import authConfig from "@config/auth";
 import { verify } from "jsonwebtoken";
 
 interface ITokenPayload {
-  id: string;
-  email: string;
+  userId: string;
   iat: number;
-  exp: number;
 }
 
 const authMiddleware: MiddlewareFn<IUserContext> = async (
@@ -18,7 +16,7 @@ const authMiddleware: MiddlewareFn<IUserContext> = async (
   const authHeader = context.req.headers.authorization;
 
   if (!authHeader) {
-    throw new AppError("JWT token is missing");
+    throw new AppError("Não autorizado.");
   }
 
   const [, token] = authHeader.split(" ");
@@ -26,14 +24,11 @@ const authMiddleware: MiddlewareFn<IUserContext> = async (
   try {
     const decoded = verify(token, authConfig.jwt.secret) as ITokenPayload;
 
-    context.user = {
-      id: decoded.id,
-      email: decoded.email,
-    };
+    context.userId = decoded.userId;
 
     return next();
   } catch {
-    throw new AppError("Invalid JWT token");
+    throw new AppError("Não autorizado.");
   }
 };
 

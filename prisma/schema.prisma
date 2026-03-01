@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
     provider = "postgresql"
-    url      = env("DATABASE_URL")
 }
 
 // =============================================
@@ -32,15 +31,66 @@ enum WhatsAppConnectionStatus {
 // =============================================
 
 model User {
-    id         String   @id @default(uuid())
-    name       String
-    email      String   @unique
-    password   String
-    active     Boolean  @default(true)
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+    id        String   @id @default(uuid())
+    firstName String
+    lastName  String
+    email     String   @unique
+    phone     String?
+    password  String?
+    isStaff   Boolean  @default(false)
+    googleId  String?  @unique
+    companyId String?
+    company   Company? @relation(fields: [companyId], references: [id])
+
+    passwordResetTokens PasswordResetToken[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     @@map("users")
+}
+
+// =============================================
+// COMPANY MODEL
+// =============================================
+
+model Company {
+    id      String  @id @default(uuid())
+    name    String
+    cnpj    String  @unique
+    phone   String
+    segment String
+    logoUrl String?
+
+    cep          String
+    street       String
+    number       String
+    neighborhood String
+    city         String
+    state        String
+
+    users User[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("companies")
+}
+
+// =============================================
+// PASSWORD RESET TOKEN MODEL
+// =============================================
+
+model PasswordResetToken {
+    id        String   @id @default(uuid())
+    userId    String
+    user      User     @relation(fields: [userId], references: [id])
+    token     String   @unique
+    used      Boolean  @default(false)
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+
+    @@map("password_reset_tokens")
 }
 
 // =============================================

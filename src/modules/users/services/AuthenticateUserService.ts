@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { compare } from "bcryptjs";
-import { sign, SignOptions } from "jsonwebtoken";
+import { sign } from "jsonwebtoken";
 import AppError from "@shared/errors/AppError";
 import authConfig from "@config/auth";
 import IUsersRepository from "../repositories/IUsersRepository";
@@ -12,9 +12,8 @@ interface IRequest {
 }
 
 interface IResponse {
+  token: string;
   user: User;
-  access_token: string;
-  refresh_token: string;
 }
 
 @injectable()
@@ -28,33 +27,25 @@ export default class AuthenticateUserService {
     const user = await this.usersRepository.findByEmail(email);
 
     if (!user) {
-      throw new AppError("Invalid email or password");
+      throw new AppError("Email ou senha inválidos");
     }
 
-    if (!user.active) {
-      throw new AppError("User is inactive");
+    if (!user.password) {
+      throw new AppError(
+        "Esta conta usa login via Google. Use 'Entrar com Google'.",
+      );
     }
 
     const passwordMatched = await compare(password, user.password);
 
     if (!passwordMatched) {
-      throw new AppError("Invalid email or password");
+      throw new AppError("mail ou senha inválidos");
     }
 
-    const { secret, accessExpiresIn, refreshExpiresIn } = authConfig.jwt;
+    const { secret } = authConfig.jwt;
 
-    const access_token = sign({ id: user.id, email: user.email }, secret, {
-      expiresIn: accessExpiresIn,
-    } as SignOptions);
+    const token = sign({ userId: user.id }, secret);
 
-    const refresh_token = sign({ id: user.id }, secret, {
-      expiresIn: refreshExpiresIn,
-    } as SignOptions);
-
-    return {
-      user,
-      access_token,
-      refresh_token,
-    };
+    return { token, user };
   }
 }

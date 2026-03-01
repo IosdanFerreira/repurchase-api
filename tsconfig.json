@@ -22,7 +22,18 @@
       "@shared/*": ["shared/*"],
       "@config/*": ["config/*"]
     },
-    "typeRoots": ["./node_modules/@types", "./src/@types"]
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
+    "types": [
+      "node",
+      "jest",
+      "bcryptjs",
+      "cors",
+      "express",
+      "jsonwebtoken",
+      "uuid",
+      "nodemailer",
+      "pg"
+    ]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "__test__"]

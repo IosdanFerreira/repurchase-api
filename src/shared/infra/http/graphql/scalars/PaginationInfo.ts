@@ -11,12 +11,12 @@ export class PaginationInfo {
   @Field(() => Int)
   limit: number;
 
-  @Field(() => Int)
+  @Field(() => Int, { name: "total_pages" })
   totalPages: number;
 
-  @Field()
+  @Field({ name: "has_next_page" })
   hasNextPage: boolean;
 
-  @Field()
+  @Field({ name: "has_previous_page" })
   hasPreviousPage: boolean;
 }

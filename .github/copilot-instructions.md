@@ -218,7 +218,8 @@ export default class UserResolver {
 
 - ✅ Usar `container.resolve()` para injetar services
 - ✅ Proteger rotas com `@UseMiddleware(AuthMiddleware, RateLimiterMiddleware)`
-- ✅ Parâmetros GraphQL em `snake_case`
+- ✅ Parâmetros GraphQL em `snake_case` — **OBRIGATÓRIO para todos os `@Arg()`, campos de `@InputType()` e propriedades de `@ObjectType()` que correspondem a dados do banco ou da mutation**
+- ❌ **NUNCA usar camelCase em parâmetros GraphQL** (ex: `newPassword` ❌ → `new_password` ✅, `firstName` ❌ → `first_name` ✅, `idToken` ❌ → `id_token` ✅)
 
 ### Container de Injeção
 

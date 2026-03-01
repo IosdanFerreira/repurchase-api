@@ -5,8 +5,10 @@ import IUsersRepository from "../repositories/IUsersRepository";
 import User from "../infra/prisma/entities/User";
 
 interface IRequest {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  phone: string;
   password: string;
 }
 
@@ -17,18 +19,26 @@ export default class CreateUserService {
     private usersRepository: IUsersRepository,
   ) {}
 
-  public async execute({ name, email, password }: IRequest): Promise<User> {
+  public async execute({
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+  }: IRequest): Promise<User> {
     const userExists = await this.usersRepository.findByEmail(email);
 
     if (userExists) {
-      throw new AppError("Email already in use");
+      throw new AppError("Este e-mail já está cadastrado.");
     }
 
-    const hashedPassword = await hash(password, 8);
+    const hashedPassword = await hash(password, 10);
 
     const user = await this.usersRepository.create({
-      name,
+      firstName,
+      lastName,
       email,
+      phone,
       password: hashedPassword,
     });
 
